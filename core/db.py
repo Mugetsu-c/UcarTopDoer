@@ -10,25 +10,22 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from core.config import settings
 
 class Base(DeclarativeBase):
-    """Базовый класс ORM-моделей."""
+    """Базовый класс для моделей SQLAlchemy.
 
-engine = create_async_engine(
-    settings.database_url_async,
-    echo=settings.debug,
-    pool_pre_ping=True,
-)
+    Используется для декларативного определения ORM-моделей.
+    """
+    pass
 
-AsyncSessionMaker = async_sessionmaker(
-    bind=engine,
-    expire_on_commit=False,
-    autoflush=False,
-)
+
+engine = create_async_engine(settings.database_url_async, echo=False)
+async_session_maker = sessionmaker(bind=engine, expire_on_commit=False, class_=AsyncSession)
+
 
 async def get_async_session() -> AsyncSession:
-    """Провайдер сессии БД для DI.
+    """Создаёт и отдаёт асинхронную сессию БД.
 
-    Yields:
-        AsyncSession: отдельная сессия на HTTP-запрос (AsyncSession per task).
+    Возвращает:
+        AsyncSession: контекстно управляемая сессия.
     """
     async with async_session_maker() as session:
         yield session
